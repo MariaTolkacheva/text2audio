@@ -1,0 +1,88 @@
+version: '3.9'
+
+x-env: &env
+  env_file: .env
+
+services:
+  db:
+    image: postgres:14
+    container_name: db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports: ["5432:5432"]
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports: ["6379:6379"]
+
+  fastapi:
+    build: ./fastapi
+    container_name: fastapi
+    <<: *env
+    depends_on: [db, redis]
+    volumes:
+      - ./fastapi:/app
+      - ./storage:${STORAGE_DIR}
+    ports: ["8000:8000"]
+
+  celery_worker:
+    build: ./fastapi
+    container_name: celery_worker
+    <<: *env
+    depends_on: [db, redis]
+    command: celery -A tasks.app worker --loglevel=INFO
+    working_dir: /app
+    volumes:
+      - ./fastapi:/app
+      - ./storage:${STORAGE_DIR}
+
+  celery_beat:
+    build: ./fastapi
+    container_name: celery_beat
+    <<: *env
+    depends_on: [db, redis]
+    command: celery -A tasks.app beat --loglevel=INFO
+    working_dir: /app
+    volumes:
+      - ./fastapi:/app
+      - ./storage:${STORAGE_DIR}
+
+  airflow-webserver:
+    image: apache/airflow:2.10.2
+    container_name: airflow-webserver
+    <<: *env
+    depends_on: [db]
+    user: "0:0"
+    environment:
+      - _AIRFLOW_WWW_USER_USERNAME=admin
+      - _AIRFLOW_WWW_USER_PASSWORD=admin
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+    ports: ["8080:8080"]
+    command: >
+      bash -c "
+      airflow db init &&
+      airflow users create --username admin --password admin --firstname a --lastname d --role Admin --email a@d &&
+      airflow webserver
+      "
+
+  airflow-scheduler:
+    image: apache/airflow:2.10.2
+    container_name: airflow-scheduler
+    <<: *env
+    depends_on: [airflow-webserver]
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+    command: airflow scheduler
+
+volumes:
+  pg_data:
