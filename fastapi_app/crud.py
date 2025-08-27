@@ -1,6 +1,5 @@
+from models import Job
 from sqlalchemy.orm import Session
-
-from .models import Job
 
 
 def create_job(db: Session, user: str, text: str) -> Job:

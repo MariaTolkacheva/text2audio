@@ -1,12 +1,11 @@
 import os
 
+from cache import set_status
 from celery import Celery
+from crud import get_job, update_job_status
+from database import SessionLocal
 from sqlalchemy.orm import Session
-
-from .cache import set_status
-from .crud import get_job, update_job_status
-from .database import SessionLocal
-from .utils_audio import synth_to_file
+from utils_audio import synth_to_file
 
 BROKER = os.getenv("CELERY_BROKER_URL")
 BACKEND = os.getenv("CELERY_RESULT_BACKEND")

@@ -1,16 +1,14 @@
 import os
 
-from sqlalchemy.orm import Session
-
+from cache import get_status, set_status
+from crud import create_job, get_job
+from database import Base, engine, get_db
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse
-
-from .cache import get_status, set_status
-from .crud import create_job, get_job
-from .database import Base, engine, get_db
-from .models import Job
-from .schemas import JobCreate, JobOut
-from .tasks import generate_audio
+from models import Job
+from schemas import JobCreate, JobOut
+from sqlalchemy.orm import Session
+from tasks import generate_audio
 
 STORAGE_DIR = os.getenv("STORAGE_DIR", "/storage")
 
@@ -22,7 +20,7 @@ api = FastAPI(title="Text → Audiobook API (v1)")
 
 @api.post("/upload-text")
 def upload_text(data: dict):
-    return {"received": data}
+    return {"received your data": data}
 
 
 @api.post("/jobs", response_model=JobOut)

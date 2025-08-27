@@ -1,7 +1,7 @@
 from sqlalchemy import Column, DateTime, Integer, String, Text
 from sqlalchemy.sql import func
 
-from .database import Base
+from database import Base
 
 
 class Job(Base):
@@ -9,7 +9,9 @@ class Job(Base):
     id = Column(Integer, primary_key=True, index=True)
     user = Column(String, default="anonymous", index=True)
     text = Column(Text)
-    status = Column(String, default="PENDING", index=True)  # PENDING/RUNNING/DONE/FAILED
+    status = Column(
+        String, default="PENDING", index=True
+    )  # PENDING/RUNNING/DONE/FAILED
     audio_file = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

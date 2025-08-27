@@ -20,36 +20,36 @@ services:
     container_name: redis
     ports: ["6379:6379"]
 
-  fastapi:
-    build: ./fastapi
-    container_name: fastapi
+  fastapi_app:
+    build: ./fastapi_app
+    container_name: fastapi_app
     <<: *env
     depends_on: [db, redis]
     volumes:
-      - ./fastapi:/app
+      - ./fastapi_app:/app
       - ./storage:${STORAGE_DIR}
     ports: ["8000:8000"]
 
   celery_worker:
-    build: ./fastapi
+    build: ./fastapi_app
     container_name: celery_worker
     <<: *env
     depends_on: [db, redis]
     command: celery -A tasks.app worker --loglevel=INFO
     working_dir: /app
     volumes:
-      - ./fastapi:/app
+      - ./fastapi_app:/app
       - ./storage:${STORAGE_DIR}
 
   celery_beat:
-    build: ./fastapi
+    build: ./fastapi_app
     container_name: celery_beat
     <<: *env
     depends_on: [db, redis]
     command: celery -A tasks.app beat --loglevel=INFO
     working_dir: /app
     volumes:
-      - ./fastapi:/app
+      - ./fastapi_app:/app
       - ./storage:${STORAGE_DIR}
 
   airflow-webserver:
