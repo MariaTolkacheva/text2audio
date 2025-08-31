@@ -28,6 +28,8 @@ services:
     volumes:
       - ./fastapi_app:/app
       - ./storage:${STORAGE_DIR}
+      - ./fastapi_app/logging.yaml:/app/logging.yaml
+      - ./logs:/app/logs
     ports: ["8000:8000"]
 
   celery_worker:
@@ -59,8 +61,8 @@ services:
     depends_on: [db]
     user: "0:0"
     environment:
-      - _AIRFLOW_WWW_USER_USERNAME=admin
-      - _AIRFLOW_WWW_USER_PASSWORD=admin
+      - _AIRFLOW_WWW_USER_USERNAME=${AIRFLOW_USER}
+      - _AIRFLOW_WWW_USER_PASSWORD=${AIRFLOW_PASS}
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs

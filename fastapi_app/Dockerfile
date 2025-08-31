@@ -14,4 +14,4 @@ COPY . .
 RUN mkdir -p /storage
 
 EXPOSE 8000
-CMD ["uvicorn", "app:api", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "app:api", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-config", "logging.yaml"]

@@ -1,6 +1,8 @@
 .env
 __pycache__/
 *.pyc
+*.log
 postgres_data/
 airflow/logs/
 storage/
+celerybeat-schedule
