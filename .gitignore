@@ -5,4 +5,5 @@ __pycache__/
 postgres_data/
 airflow/logs/
 storage/
+venv/
 celerybeat-schedule
