@@ -23,7 +23,7 @@ docker-compose up --build
 To stop everything
 
 ```sh
-docker compose down
+docker-compose down
 ```
 ---
 
@@ -32,13 +32,13 @@ docker compose down
 If you want to test:
 1. Start dependencies:
 ```sh
-docker compose up -d db redis
+docker-compose up -d db redis
 ```
 2. Run tests in a new container:
 ```sh
-docker compose run --rm fastapi_app pytest
+docker-compose run --rm fastapi_app pytest
 ```
 3. Shut down dependencies:
 ```sh
-docker compose down
+docker-compose down
 ```
