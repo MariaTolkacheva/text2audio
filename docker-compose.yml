@@ -26,10 +26,10 @@ services:
     <<: *env
     depends_on: [db, redis]
     volumes:
-      - ./fastapi_app:/app
+      - ./fastapi_app:/fastapi_app
       - ./storage:${STORAGE_DIR}
-      - ./fastapi_app/logging.yaml:/app/logging.yaml
-      - ./logs:/app/logs
+      - ./fastapi_app/logging.yaml:/fastapi_app/logging.yaml
+      - ./logs:/fastapi_app/logs
     ports: ["8000:8000"]
 
   celery_worker:
@@ -38,9 +38,9 @@ services:
     <<: *env
     depends_on: [db, redis]
     command: celery -A tasks.app worker --loglevel=INFO
-    working_dir: /app
+    working_dir: /fastapi_app
     volumes:
-      - ./fastapi_app:/app
+      - ./fastapi_app:/fastapi_app
       - ./storage:${STORAGE_DIR}
 
   celery_beat:
@@ -49,9 +49,9 @@ services:
     <<: *env
     depends_on: [db, redis]
     command: celery -A tasks.app beat --loglevel=INFO
-    working_dir: /app
+    working_dir: /fastapi_app
     volumes:
-      - ./fastapi_app:/app
+      - ./fastapi_app:/fastapi_app
       - ./storage:${STORAGE_DIR}
 
   airflow-webserver:

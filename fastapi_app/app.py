@@ -1,9 +1,10 @@
 import logging
 import os
 
-from database import Base, engine
 from fastapi import FastAPI
-from routers import jobs
+
+from fastapi_app.database import Base, engine
+from fastapi_app.routers import jobs
 
 logger = logging.getLogger("fastapi")
 
