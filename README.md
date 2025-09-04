@@ -36,7 +36,7 @@ docker-compose up -d db redis
 ```
 2. Run tests in a new container:
 ```sh
-docker-compose run --rm fastapi_app pytest
+docker-compose run --rm fastapi_app python3 -m pytest fastapi_app
 ```
 3. Shut down dependencies:
 ```sh
