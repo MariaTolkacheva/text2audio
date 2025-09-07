@@ -11,15 +11,16 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-    ports: ["5432:5432"]
     volumes:
       - pg_data:/var/lib/postgresql/data
+    networks:
+      - my_network
 
   redis:
     image: redis:7
     container_name: redis
-    ports: ["6379:6379"]
-
+    networks:
+      - my_network
   fastapi_app:
     build: ./fastapi_app
     container_name: fastapi_app
@@ -31,34 +32,40 @@ services:
       - ./fastapi_app/logging.yaml:/fastapi_app/logging.yaml
       - ./logs:/fastapi_app/logs
     ports: ["8000:8000"]
+    networks:
+      - my_network
 
   celery_worker:
     build: ./fastapi_app
     container_name: celery_worker
     <<: *env
     depends_on: [db, redis]
-    command: celery -A tasks.app worker --loglevel=INFO
+    command: celery -A fastapi_app.tasks.app worker --loglevel=INFO
     working_dir: /fastapi_app
     volumes:
-      - ./fastapi_app:/fastapi_app
+      - .:/fastapi_app
       - ./storage:${STORAGE_DIR}
+    networks:
+      - my_network
 
   celery_beat:
     build: ./fastapi_app
     container_name: celery_beat
     <<: *env
     depends_on: [db, redis]
-    command: celery -A tasks.app beat --loglevel=INFO
+    command: celery -A fastapi_app.tasks.app beat --loglevel=INFO
     working_dir: /fastapi_app
     volumes:
-      - ./fastapi_app:/fastapi_app
+      - .:/fastapi_app
       - ./storage:${STORAGE_DIR}
+    networks:
+      - my_network
 
   airflow-webserver:
     image: apache/airflow:2.10.2
     container_name: airflow-webserver
     <<: *env
-    depends_on: [db]
+    depends_on: [db, redis]
     user: "0:0"
     environment:
       - _AIRFLOW_WWW_USER_USERNAME=${AIRFLOW_USER}
@@ -74,17 +81,25 @@ services:
       airflow users create --username admin --password admin --firstname a --lastname d --role Admin --email a@d &&
       airflow webserver
       "
+    networks:
+      - my_network
 
   airflow-scheduler:
     image: apache/airflow:2.10.2
     container_name: airflow-scheduler
     <<: *env
-    depends_on: [airflow-webserver]
+    depends_on: [airflow-webserver, db, redis]
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
     command: airflow scheduler
+    networks:
+      - my_network
 
 volumes:
   pg_data:
+
+networks:
+  my_network:
+    driver: bridge

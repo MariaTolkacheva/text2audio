@@ -1,5 +1,10 @@
-from models import Job
+import logging
+
 from sqlalchemy.orm import Session
+
+from fastapi_app.models import Job
+
+logger = logging.getLogger(__name__)
 
 
 def create_job(db: Session, user: str, text: str) -> Job:
@@ -13,6 +18,7 @@ def create_job(db: Session, user: str, text: str) -> Job:
 def update_job_status(
     db: Session, job_id: int, status: str, audio_file: str | None = None
 ):
+    logger.info("Updating job status for %d for status %s", job_id, status)
     job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
         return None

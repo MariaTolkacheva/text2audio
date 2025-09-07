@@ -1,13 +1,17 @@
+import logging
 import os
 
-from cache import get_status, set_status
-from crud import create_job, get_job
-from database import get_db
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
-from schemas import JobCreate, JobOut
 from sqlalchemy.orm import Session
-from tasks import generate_audio
+
+from fastapi_app.cache import get_status, set_status
+from fastapi_app.crud import create_job, get_job
+from fastapi_app.database import get_db
+from fastapi_app.schemas import JobCreate, JobOut
+from fastapi_app.tasks import generate_audio
+
+logger = logging.getLogger(__name__)
 
 STORAGE_DIR = os.getenv("STORAGE_DIR", "/storage")
 router = APIRouter(prefix="/jobs", tags=["jobs"])
@@ -22,7 +26,7 @@ def upload_text(data: dict):
 def create_conversion(payload: JobCreate, db: Session = Depends(get_db)):
     job = create_job(db, user=payload.user or "anonymous", text=payload.text)
     set_status(job.id, "PENDING")
-    # enqueue async task
+    logging.info("Created a job with id=%d", job.id)
     generate_audio.delay(job.id)
     return JobOut(job_id=job.id, status="PENDING")
 

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, DateTime, Integer, String, Text
 from sqlalchemy.sql import func
 
-from database import Base
+from fastapi_app.database import Base
 
 
 class Job(Base):

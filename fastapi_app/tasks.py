@@ -1,11 +1,15 @@
+import logging
 import os
 
-from cache import set_status
 from celery import Celery
-from crud import get_job, update_job_status
-from database import SessionLocal
 from sqlalchemy.orm import Session
-from utils_audio import synth_to_file
+
+from fastapi_app.cache import set_status
+from fastapi_app.crud import get_job, update_job_status
+from fastapi_app.database import SessionLocal
+from fastapi_app.utils_audio import synth_to_file
+
+logger = logging.getLogger(__name__)
 
 BROKER = os.getenv("CELERY_BROKER_URL")
 BACKEND = os.getenv("CELERY_RESULT_BACKEND")
@@ -17,8 +21,8 @@ app = Celery("tts_tasks", broker=BROKER, backend=BACKEND)
 @app.task(name="tts.generate_audio")
 def generate_audio(job_id: int):
     db: Session = SessionLocal()
+    logger.info("Started generating audio for %d", job_id)
     try:
-        # mark running
         update_job_status(db, job_id, "RUNNING")
         set_status(job_id, "RUNNING")
 
